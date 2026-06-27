@@ -1,17 +1,17 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ADMIN_ACCESS_COOKIE } from "@/lib/auth/constants";
-import { verifyAdminAccess } from "@/lib/auth/verify-admin";
+import { verifyAdminSession } from "@/lib/auth/session";
 
 export async function getAdminSession() {
   const cookieStore = await cookies();
-  const accessToken = cookieStore.get(ADMIN_ACCESS_COOKIE)?.value;
+  const sessionToken = cookieStore.get(ADMIN_ACCESS_COOKIE)?.value;
 
-  if (!accessToken) {
+  if (!sessionToken) {
     return null;
   }
 
-  return verifyAdminAccess(accessToken);
+  return verifyAdminSession(sessionToken);
 }
 
 export async function requireAdmin() {

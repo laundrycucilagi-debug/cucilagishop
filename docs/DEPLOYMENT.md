@@ -7,7 +7,7 @@ Panduan ini menyiapkan Cucilagi Shop dari project lokal sampai online. Jalankan 
 - Halaman publik `/` membaca produk aktif dari Supabase ketika `NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_ANON_KEY` tersedia.
 - Jika Supabase belum dikonfigurasi, bermasalah, atau belum berisi produk, katalog memakai fallback dari `src/lib/products.ts`.
 - Schema PostgreSQL, RLS, fungsi transaksi, dan bucket `product-images` tersedia di folder `supabase`.
-- Login admin memakai Supabase Auth, cookie HttpOnly, middleware, dan allowlist `admin_users`.
+- Login admin memakai satu akun dari environment server: `ADMIN_EMAIL` dan `ADMIN_PASSWORD`.
 - `/admin/backup` mengekspor seluruh tabel aplikasi ke Excel atau PDF tanpa menyimpan file di server.
 - Form CRUD produk, stok, dan penjualan masih perlu disambungkan ke mutation Supabase pada tahap backend berikutnya.
 
@@ -42,12 +42,15 @@ NEXT_PUBLIC_APP_URL=http://127.0.0.1:3000
 NEXT_PUBLIC_WHATSAPP_NUMBER=6285210107054
 NEXT_PUBLIC_SUPABASE_URL=https://PROJECT_REF.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=PASTE_PUBLISHABLE_OR_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY=
+ADMIN_EMAIL=admin@cucilagi.com
+ADMIN_PASSWORD=PASTE_ADMIN_PASSWORD
+ADMIN_SESSION_SECRET=PASTE_LONG_RANDOM_SECRET
+SUPABASE_SERVICE_ROLE_KEY=PASTE_SERVICE_ROLE_KEY
 ```
 
 Restart `npm run dev` setelah mengubah env.
 
-Publishable key boleh tersedia di browser, tetapi hanya aman jika seluruh tabel memakai RLS. Secret/service-role key wajib server-only. Implementasi saat ini tidak membutuhkannya untuk login atau backup karena keduanya berjalan memakai token user admin dan policy database.
+Publishable key boleh tersedia di browser, tetapi hanya aman jika seluruh tabel memakai RLS. `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, dan secret/service-role key wajib server-only. Login tidak memakai Supabase Auth; backup memakai route server admin dan service-role key.
 
 ## 4. Membuat Database
 
@@ -60,7 +63,6 @@ Publishable key boleh tersedia di browser, tetapi hanya aman jika seluruh tabel 
    - `products`
    - `sales`
    - `stock_histories`
-   - `admin_users`
 5. Buka **Storage** dan pastikan bucket publik `product-images` tersedia.
 
 ### Opsi B: Supabase CLI
@@ -74,26 +76,18 @@ npx supabase@latest link --project-ref PROJECT_REF
 npx supabase@latest db push
 ```
 
-Setelah migration selesai, jalankan `supabase/seed.sql` melalui SQL Editor untuk mengisi data awal. Migration tersimpan di `supabase/migrations/20260623000000_initial_schema.sql`.
+Setelah migration selesai, jalankan `supabase/seed.sql` melalui SQL Editor untuk mengisi data awal. Migration akses login terbaru tersedia di `supabase/migrations/20260624000000_authenticated_users_access.sql`.
 
 Referensi resmi: [database migrations](https://supabase.com/docs/guides/deployment/database-migrations) dan [Supabase CLI](https://supabase.com/docs/reference/cli/introduction).
 
-## 5. Membuat Admin Supabase
+## 5. Mengatur Login Admin Tunggal
 
-1. Buka **Authentication > Users**.
-2. Pilih **Add user** dan buat email serta password admin.
-3. Aktifkan email user jika dashboard meminta konfirmasi.
-4. Jalankan SQL berikut dengan email admin yang dibuat:
+1. Tentukan email admin. Default aplikasi adalah `admin@cucilagi.com`.
+2. Buat password admin kuat dan simpan di password manager.
+3. Isi `ADMIN_EMAIL`, `ADMIN_PASSWORD`, dan `ADMIN_SESSION_SECRET` di `.env.local`.
+4. Login di `/admin/login` memakai email dan password tersebut. Tidak diperlukan user Supabase Auth atau insert ke tabel lain.
 
-```sql
-insert into public.admin_users (user_id, email)
-select id, email
-from auth.users
-where email = 'admin@cucilagi.com'
-on conflict (user_id) do update set email = excluded.email;
-```
-
-Tabel `admin_users` menjadi allowlist. User login biasa tidak mendapatkan akses CRUD hanya karena sudah terautentikasi.
+Shop hanya memiliki satu admin. Jika ingin mengganti admin, ubah environment variable lalu redeploy.
 
 ## 6. Memeriksa Database
 
@@ -103,9 +97,6 @@ Jalankan melalui SQL Editor:
 select id, name, price, discount_percentage, selling_price, stock, is_active
 from public.products
 order by created_at;
-
-select user_id, email, created_at
-from public.admin_users;
 ```
 
 Kemudian restart aplikasi. Endpoint health harus menampilkan:
@@ -172,9 +163,12 @@ Referensi resmi: [menambahkan project lokal ke GitHub](https://docs.github.com/e
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | `6285210107054` |
 | `NEXT_PUBLIC_SUPABASE_URL` | Project URL Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Publishable/anon key Supabase |
-| `SUPABASE_SERVICE_ROLE_KEY` | Kosongkan kecuali ada route server tepercaya yang benar-benar membutuhkannya |
+| `ADMIN_EMAIL` | Email admin, default `admin@cucilagi.com` |
+| `ADMIN_PASSWORD` | Password admin tunggal |
+| `ADMIN_SESSION_SECRET` | String acak panjang untuk tanda tangan cookie |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service-role key Supabase untuk route server backup |
 
-Untuk setiap variable, pilih target **Development**, **Preview**, dan **Production** secara terpisah. Gunakan nilai project Supabase development untuk Development/Preview dan project production untuk Production jika tersedia. Tandai `SUPABASE_SERVICE_ROLE_KEY` sebagai **Sensitive** agar nilainya tidak dapat dibaca ulang. Jangan pernah mengeksposnya ke browser.
+Untuk setiap variable, pilih target **Development**, **Preview**, dan **Production** secara terpisah. Gunakan nilai project Supabase development untuk Development/Preview dan project production untuk Production jika tersedia. Tandai `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, dan `SUPABASE_SERVICE_ROLE_KEY` sebagai **Sensitive** agar nilainya tidak dapat dibaca ulang. Jangan pernah mengeksposnya ke browser.
 
 8. Klik **Deploy**.
 9. Setelah status **Ready**, buka URL deployment dan cek halaman publik serta `/api/health`.
@@ -200,10 +194,10 @@ Rekomendasi domain aplikasi toko: `shop.cucilagilaundry.com`.
 - `/api/health` mengembalikan `status: ok`, `mode: supabase`, dan `databaseConfigured: true`.
 - Tombol **Beli Sekarang** membuka WhatsApp dengan produk dan harga yang benar.
 - Produk nonaktif tidak tampil di katalog.
-- Login non-admin ditolak dan `/admin` mengarah ke `/admin/login` tanpa session valid.
+- Email/password admin dari environment dapat login; `/admin` mengarah ke `/admin/login` tanpa session valid.
 - Backup Excel dan PDF hanya dapat diunduh setelah login admin.
 - RLS aktif pada seluruh tabel.
-- Bucket `product-images` dapat dibaca publik, tetapi upload/update/delete hanya untuk admin allowlist.
+- Bucket `product-images` dapat dibaca publik, tetapi upload/update/delete hanya untuk user `authenticated`.
 - Tidak ada `.env.local` atau secret key di GitHub.
 - GitHub Actions berstatus hijau.
 
@@ -231,9 +225,9 @@ Jika deployment terbaru bermasalah:
 ## 13. Keamanan dan Batasan Saat Ini
 
 - Katalog publik sudah dapat membaca Supabase menggunakan anon key dan RLS.
-- Login admin memanggil Supabase Auth dan memverifikasi `admin_users` sebelum membuat cookie HttpOnly.
+- Login memverifikasi `ADMIN_EMAIL` dan `ADMIN_PASSWORD` di server, lalu membuat cookie HttpOnly bertanda tangan.
 - Middleware dan layout server memverifikasi ulang session untuk route `/admin`.
-- Export Excel/PDF memakai token admin, tunduk pada RLS, dan tidak memakai service-role key.
+- Export Excel/PDF memakai route server admin dan service-role key. Service-role key tidak pernah dipakai di browser.
 - Error produksi ditampilkan secara generik tanpa detail internal.
 - Tombol simpan produk, penjualan, upload gambar, dan perubahan stok belum melakukan mutation ke Supabase.
 

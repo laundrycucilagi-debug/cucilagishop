@@ -26,7 +26,8 @@ export function AdminLoginForm() {
       });
 
       if (!response.ok) {
-        setError("Email atau password salah.");
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        setError(payload?.error || "Email atau password admin salah.");
         return;
       }
 
@@ -64,8 +65,7 @@ export function AdminLoginForm() {
             name="password"
             type="password"
             required
-            minLength={8}
-            maxLength={128}
+            maxLength={512}
             autoComplete="current-password"
             placeholder="Password"
             className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none"

@@ -19,7 +19,7 @@ export function AdminBackupClient() {
       });
 
       if (!response.ok) {
-        setMessage("Backup belum dapat dibuat. Periksa koneksi dan session admin.");
+        setMessage("Backup belum dapat dibuat. Periksa koneksi dan sesi admin.");
         return;
       }
 
@@ -48,7 +48,7 @@ export function AdminBackupClient() {
         <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-accent">Keamanan Data</p>
         <h2 className="mt-2 font-heading text-3xl font-extrabold text-black">Backup Semua Data</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-text">
-          Backup mengambil produk, penjualan, riwayat stok, dan daftar admin langsung dari Supabase sesuai hak akses admin.
+          Backup mengambil produk, penjualan, dan riwayat stok langsung dari Supabase setelah sesi admin valid.
         </p>
       </div>
 
@@ -79,7 +79,7 @@ export function AdminBackupClient() {
           <div>
             <h3 className="font-heading text-lg font-extrabold text-black">Akses Terproteksi</h3>
             <p className="mt-1 text-sm leading-6 text-muted-text">
-              Endpoint backup memverifikasi session Supabase dan allowlist admin di database. File tidak disimpan di server.
+              Endpoint backup memverifikasi sesi admin. File tidak disimpan di server.
             </p>
           </div>
         </div>

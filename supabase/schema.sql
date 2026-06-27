@@ -76,11 +76,7 @@ stable
 security definer
 set search_path = public
 as $$
-  select exists (
-    select 1
-    from public.admin_users
-    where user_id = auth.uid()
-  );
+  select auth.uid() is not null;
 $$;
 
 revoke all on function public.is_admin() from public;

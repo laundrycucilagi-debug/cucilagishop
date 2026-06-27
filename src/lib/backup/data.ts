@@ -1,4 +1,4 @@
-import type { AdminIdentity } from "@/lib/auth/verify-admin";
+import type { AuthenticatedUser } from "@/lib/auth/session";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 
 export type BackupPayload = {
@@ -8,36 +8,39 @@ export type BackupPayload = {
     products: Array<Record<string, unknown>>;
     sales: Array<Record<string, unknown>>;
     stock_histories: Array<Record<string, unknown>>;
-    admin_users: Array<Record<string, unknown>>;
   };
 };
 
-export async function getBackupPayload(admin: AdminIdentity): Promise<BackupPayload> {
-  const [products, sales, stockHistories, adminUsers] = await Promise.all([
-    fetchTable("products", admin.accessToken),
-    fetchTable("sales", admin.accessToken),
-    fetchTable("stock_histories", admin.accessToken),
-    fetchTable("admin_users", admin.accessToken),
+export async function getBackupPayload(user: AuthenticatedUser): Promise<BackupPayload> {
+  const [products, sales, stockHistories] = await Promise.all([
+    fetchTable("products"),
+    fetchTable("sales"),
+    fetchTable("stock_histories"),
   ]);
 
   return {
     generatedAt: new Date().toISOString(),
-    generatedBy: admin.email,
+    generatedBy: user.email,
     tables: {
       products,
       sales,
       stock_histories: stockHistories,
-      admin_users: adminUsers,
     },
   };
 }
 
-async function fetchTable(table: string, accessToken: string) {
-  const { url, publishableKey } = getSupabaseConfig();
+async function fetchTable(table: string) {
+  const { url } = getSupabaseConfig();
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+  if (!serviceKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for admin backup");
+  }
+
   const response = await fetch(`${url}/rest/v1/${table}?select=*&order=created_at.asc`, {
     headers: {
-      apikey: publishableKey,
-      Authorization: `Bearer ${accessToken}`,
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
       Accept: "application/json",
     },
     cache: "no-store",

@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Send, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BrandMark } from "@/components/public/brand-mark";
 import { cn } from "@/lib/utils";
@@ -66,14 +66,6 @@ export function SiteHeader() {
             </a>
           ))}
         </nav>
-
-        <a
-          href={`${websiteOrigin}/#pickup`}
-          className="inline-flex min-h-[42px] items-center justify-center gap-2.5 rounded-full bg-primary px-[18px] py-3 text-[0.88rem] font-black leading-none text-black shadow-[0_14px_30px_rgba(255,187,16,0.24)] transition hover:-translate-y-0.5 hover:bg-primary-dark max-[820px]:hidden"
-        >
-          <Send className="size-4" aria-hidden="true" />
-          Pesan Sekarang
-        </a>
 
         <button
           type="button"

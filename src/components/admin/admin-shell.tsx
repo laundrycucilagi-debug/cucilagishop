@@ -4,10 +4,8 @@ import {
   Bell,
   Boxes,
   DatabaseBackup,
-  Home,
   LayoutDashboard,
   Package,
-  Plus,
   ReceiptText,
   ShieldCheck,
   type LucideIcon,
@@ -106,14 +104,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <main className="mx-auto max-w-[1180px] px-4 py-6 pb-32 md:px-6 md:py-8 md:pb-36 lg:pb-8">{children}</main>
       </div>
 
-      <nav className="fixed bottom-4 left-1/2 z-50 grid w-[calc(100%-32px)] max-w-[520px] -translate-x-1/2 grid-cols-5 items-center rounded-[28px] border border-white/80 bg-white px-3 py-3 shadow-[0_18px_40px_rgba(13,13,13,0.16)] lg:hidden" aria-label="Navigasi cepat admin">
-        <MobileNavItem href="/admin" label="Home" icon={Home} />
-        <MobileNavItem href="/admin/sales" label="Transaksi" icon={ReceiptText} />
-        <Link href="/admin/products" className="mx-auto grid size-14 -translate-y-3 place-items-center rounded-full bg-primary text-black shadow-[0_12px_28px_rgba(255,187,16,0.38)]" aria-label="Tambah produk">
-          <Plus className="size-7" aria-hidden="true" />
-        </Link>
-        <MobileNavItem href="/admin/reports" label="Laporan" icon={BarChart3} />
-        <MobileNavItem href="/admin/backup" label="Backup" icon={DatabaseBackup} />
+      <nav className="fixed bottom-4 left-1/2 z-50 grid w-[calc(100%-24px)] max-w-[620px] -translate-x-1/2 grid-cols-6 items-center rounded-[28px] border border-white/80 bg-white px-2 py-2.5 shadow-[0_18px_40px_rgba(13,13,13,0.16)] lg:hidden" aria-label="Navigasi cepat admin">
+        {menuItems.map((item) => (
+          <MobileNavItem key={item.href} href={item.href} label={item.label} icon={item.icon} />
+        ))}
       </nav>
     </div>
   );
@@ -121,9 +115,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
 function MobileNavItem({ href, label, icon: Icon }: { href: string; label: string; icon: LucideIcon }) {
   return (
-    <Link href={href} className="grid justify-items-center gap-1 text-[0.68rem] font-bold text-muted-text">
-      <Icon className="size-6 text-black" aria-hidden="true" />
-      {label}
+    <Link href={href} className="grid min-h-[58px] justify-items-center gap-1 rounded-[18px] px-1 py-1 text-center text-[0.56rem] font-black leading-none text-muted-text transition hover:bg-light-gray hover:text-black sm:text-[0.66rem]">
+      <Icon className="size-5 text-black sm:size-6" aria-hidden="true" />
+      <span className="truncate">{label}</span>
     </Link>
   );
 }

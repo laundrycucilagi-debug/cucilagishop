@@ -14,6 +14,8 @@ const eslintConfig = [
   {
     ignores: [
       "node_modules/**",
+      ".github-publish/**",
+      ".gh-cli/**",
       ".next*/**",
       "out/**",
       "build/**",

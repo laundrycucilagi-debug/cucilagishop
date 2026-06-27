@@ -1,4 +1,4 @@
-import { BarChart3, Boxes, Home, LayoutGrid, Package, PackagePlus, PackageX, ReceiptText, ShoppingBag, Store, Wallet } from "lucide-react";
+import { BarChart3, Boxes, DatabaseBackup, Package, PackagePlus, PackageX, ReceiptText, ShoppingBag, Store, Wallet } from "lucide-react";
 import Link from "next/link";
 import { AdminSection } from "@/components/admin/admin-section";
 import { StatCard } from "@/components/admin/stat-card";
@@ -16,9 +16,8 @@ export default function AdminDashboardPage() {
     { href: "/admin/sales", label: "Penjualan", icon: ReceiptText, color: "bg-purple-50 text-purple-600" },
     { href: "/admin/stock", label: "Stok", icon: Boxes, color: "bg-emerald-50 text-emerald-600" },
     { href: "/admin/reports", label: "Laporan", icon: BarChart3, color: "bg-orange-50 text-orange-600" },
+    { href: "/admin/backup", label: "Backup", icon: DatabaseBackup, color: "bg-slate-100 text-slate-900" },
     { href: "/", label: "Katalog", icon: Store, color: "bg-rose-50 text-rose-600" },
-    { href: "/admin", label: "Home", icon: Home, color: "bg-yellow-50 text-accent" },
-    { href: "/admin/reports", label: "Semua", icon: LayoutGrid, color: "bg-black text-white" },
   ];
 
   return (

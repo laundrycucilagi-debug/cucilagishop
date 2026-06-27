@@ -7,7 +7,7 @@ export default function AdminLoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-secondary px-4 py-10">
       <div className="w-full max-w-md rounded-[28px] border border-border bg-white p-6 shadow-card">
         <div className="flex justify-center">
-          <BrandMark />
+          <BrandMark tone="dark" />
         </div>
         <div className="mt-8 text-center">
           <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-accent">Admin Login</p>
